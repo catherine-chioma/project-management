@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                // JavaScript version
+    "module": "CommonJS",           // Node.js module system
+    "rootDir": "./src",             // Where your .ts files are
+    "outDir": "./dist",             // Compiled JS output
+    "esModuleInterop": true,        // Allows default imports from CommonJS modules
+    "moduleResolution": "node",     
+    "strict": true,                 // Enables strict type checks
+    "skipLibCheck": true
+  },
+  "include": ["src"]                // Include all TS files in src/
+}
+
