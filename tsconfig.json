@@ -7,7 +7,8 @@
     "esModuleInterop": true,        // Allows default imports from CommonJS modules
     "moduleResolution": "node",     
     "strict": true,                 // Enables strict type checks
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"]                // Include all TS files in src/
 }
