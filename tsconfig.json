@@ -1,16 +1,20 @@
 {
   "compilerOptions": {
     "types": ["node"],
-    "target": "ES6",                // JavaScript version
-    "module": "CommonJS",           // Node.js module system
-    "rootDir": "./src",             // Where your .ts files are
-    "outDir": "./dist",             // Compiled JS output
-    "esModuleInterop": true,        // Allows default imports from CommonJS modules
-    "moduleResolution": "node",     
-    "strict": true,                 // Enables strict type checks
+    "target": "ES6",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "strict": true,
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src"]                // Include all TS files in src/
+  "include": ["src"]
 }
+
+
+
+
 
