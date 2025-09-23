@@ -6,7 +6,6 @@
     "outDir": "./dist",              // Compiled JS output
     "esModuleInterop": true,         // Allows default imports from CommonJS modules
     "moduleResolution": "node",      
-    "ignoreDeprecations": "6.0",     // Ignore deprecations up to TypeScript 6.0
     "strict": true,                  // Enables strict type checks
     "skipLibCheck": true,            // Skip type checking of declaration files
     "types": ["node"]                // Include Node.js types
