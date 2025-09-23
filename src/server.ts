@@ -11,6 +11,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ✅ Root route
+app.get("/", (req, res) => {
+  res.send("Backend is running! Project Management API is live.");
+});
+
 // ✅ Health check (DB + API)
 app.get("/health", async (req, res) => {
   try {
@@ -21,7 +26,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-// ✅ Routes
+// ✅ Project routes
 app.use("/projects", projectRoutes); // Base path for project APIs
 
 const PORT = process.env.PORT || 5000;
