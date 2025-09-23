@@ -1,7 +1,7 @@
 // src/routes/projectRoutes.ts
 import { Router, Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
-import prisma from "../db"; // ✅ centralized Prisma import
+import prisma from "../db"; // centralized Prisma import
 
 const router = Router();
 
@@ -36,7 +36,7 @@ router.post(
         }
         return true;
       }),
-    body("ownerId").isInt().withMessage("Owner ID is required"), // ✅ Prisma requires relation
+    body("ownerId").isInt().withMessage("Owner ID is required"),
   ],
   validate,
   async (req: Request, res: Response) => {
@@ -50,7 +50,7 @@ router.post(
           budget,
           startDate,
           endDate,
-          owner: { connect: { id: ownerId } }, // ✅ relation to User
+          owner: { connect: { id: ownerId } },
         },
       });
 
@@ -87,6 +87,20 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     res.json(project);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ message: "Server error", error: errorMessage });
+  }
+});
+
+// ✅ READ documents for a project
+router.get("/:id/documents", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const documents = await prisma.document.findMany({
+      where: { projectId: Number(id) },
+    });
+    res.json(documents);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     res.status(500).json({ message: "Server error", error: errorMessage });
@@ -139,6 +153,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 export default router;
+
 
 
 
