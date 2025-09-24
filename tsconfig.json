@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES6",                 // JavaScript version
-    "module": "CommonJS",            // Node.js module system
+    "module": "Node16",              // Node.js module system
     "rootDir": "./src",              // Source files location
     "outDir": "./dist",              // Compiled JS output
     "esModuleInterop": true,         // Allows default imports from CommonJS modules
-    "moduleResolution": "node",      
+    "moduleResolution": "node16",      
     "strict": true,                  // Enables strict type checks
     "skipLibCheck": true,            // Skip type checking of declaration files
     "types": ["node"]                // Include Node.js types
