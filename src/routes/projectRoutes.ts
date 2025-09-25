@@ -5,7 +5,7 @@ import prisma from "../db";
 
 const router = express.Router();
 
-// ✅ Validation middleware
+// ==================== VALIDATION MIDDLEWARE ====================
 const validate = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -121,66 +121,93 @@ router.delete("/:id", async (req, res) => {
 // ==================== NESTED POST ROUTES ====================
 
 // ✅ CREATE Task for a project
-router.post("/:id/tasks", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, description, userId, dueDate } = req.body;
+router.post(
+  "/:id/tasks",
+  [
+    body("title").notEmpty().withMessage("Task title is required"),
+    body("userId").isInt().withMessage("User ID is required"),
+    body("dueDate").optional().isISO8601().toDate().withMessage("Invalid dueDate"),
+  ],
+  validate,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { id } = req.params;
+      const { title, description, userId, dueDate } = req.body;
 
-    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
-    if (!project) return res.status(404).json({ error: "Project not found" });
+      const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+      if (!project) return res.status(404).json({ error: "Project not found" });
 
-    const task = await prisma.task.create({
-      data: { title, description, userId, projectId: Number(id), dueDate: dueDate ? new Date(dueDate) : undefined },
-    });
+      const task = await prisma.task.create({
+        data: { title, description, userId, projectId: Number(id), dueDate },
+      });
 
-    res.status(201).json({ message: "Task created", task });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+      res.status(201).json({ message: "Task created", task });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+    }
   }
-});
+);
 
 // ✅ CREATE Document for a project
-router.post("/:id/documents", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, text } = req.body;
+router.post(
+  "/:id/documents",
+  [
+    body("title").notEmpty().withMessage("Document title is required"),
+    body("text").notEmpty().withMessage("Document text is required"),
+  ],
+  validate,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { id } = req.params;
+      const { title, text } = req.body;
 
-    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
-    if (!project) return res.status(404).json({ error: "Project not found" });
+      const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+      if (!project) return res.status(404).json({ error: "Project not found" });
 
-    const document = await prisma.document.create({
-      data: { title, text, projectId: Number(id) },
-    });
+      const document = await prisma.document.create({
+        data: { title, text, projectId: Number(id) },
+      });
 
-    res.status(201).json({ message: "Document created", document });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+      res.status(201).json({ message: "Document created", document });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+    }
   }
-});
+);
 
 // ✅ CREATE Payment for a project
-router.post("/:id/payments", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { amount, method, date } = req.body;
+router.post(
+  "/:id/payments",
+  [
+    body("amount").isFloat({ gt: 0 }).withMessage("Amount must be a positive number"),
+    body("method").notEmpty().withMessage("Payment method is required"),
+    body("date").optional().isISO8601().toDate().withMessage("Invalid date"),
+  ],
+  validate,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { id } = req.params;
+      const { amount, method, date } = req.body;
 
-    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
-    if (!project) return res.status(404).json({ error: "Project not found" });
+      const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+      if (!project) return res.status(404).json({ error: "Project not found" });
 
-    const payment = await prisma.payment.create({
-      data: { amount, method, date: date ? new Date(date) : undefined, projectId: Number(id) },
-    });
+      const payment = await prisma.payment.create({
+        data: { amount, method, date, projectId: Number(id) },
+      });
 
-    res.status(201).json({ message: "Payment created", payment });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+      res.status(201).json({ message: "Payment created", payment });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+    }
   }
-});
+);
 
 export default router;
+
 
 
 
