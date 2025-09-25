@@ -3,68 +3,92 @@ import prisma from "../db";
 
 const router = express.Router();
 
-// Get all documents
-router.get("/", async (req, res) => {
-  try {
-    const documents = await prisma.document.findMany({ include: { project: true } });
-    res.json(documents);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch documents" });
-  }
-});
-
-// Get document by ID
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const document = await prisma.document.findUnique({
-      where: { id: Number(id) },
-      include: { project: true },
-    });
-    if (!document) return res.status(404).json({ error: "Document not found" });
-    res.json(document);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch document" });
-  }
-});
-
-// Create document
+// ✅ Create a document
 router.post("/", async (req, res) => {
-  const { title, text, projectId } = req.body;
   try {
-    const newDocument = await prisma.document.create({
+    const { title, text, projectId } = req.body;
+
+    if (!title || !text || !projectId) {
+      return res.status(400).json({ error: "Title, text, and projectId are required" });
+    }
+
+    // Check if project exists
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return res.status(400).json({ error: "Project not found" });
+
+    const document = await prisma.document.create({
       data: { title, text, projectId },
     });
-    res.status(201).json(newDocument);
+
+    res.status(201).json({ message: "Document created", document });
   } catch (error) {
-    res.status(500).json({ error: "Failed to create document" });
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: (error as Error).toString() });
   }
 });
 
-// Update document
-router.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const { title, text } = req.body;
+// ✅ Get all documents
+router.get("/", async (req, res) => {
   try {
-    const updatedDocument = await prisma.document.update({
-      where: { id: Number(id) },
+    const documents = await prisma.document.findMany({
+      include: { project: true },
+    });
+    res.json(documents);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ Get a document by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const document = await prisma.document.findUnique({
+      where: { id },
+      include: { project: true },
+    });
+
+    if (!document) return res.status(404).json({ error: "Document not found" });
+
+    res.json(document);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ Update a document
+router.put("/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title, text } = req.body;
+
+    const document = await prisma.document.update({
+      where: { id },
       data: { title, text },
     });
-    res.json(updatedDocument);
+
+    res.json({ message: "Document updated", document });
   } catch (error) {
-    res.status(500).json({ error: "Failed to update document" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Delete document
+// ✅ Delete a document
 router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
   try {
-    await prisma.document.delete({ where: { id: Number(id) } });
-    res.json({ message: "Document deleted successfully" });
+    const id = parseInt(req.params.id);
+
+    await prisma.document.delete({ where: { id } });
+    res.json({ message: "Document deleted" });
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete document" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 export default router;
+

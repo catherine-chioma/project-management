@@ -51,7 +51,10 @@ router.post("/", async (req, res) => {
     res.status(201).json({ message: "Project created", project });
   } catch (error) {
     console.error("Project creation error:", error);
-    res.status(500).json({ message: "Server error", error: error.toString() });
+    res.status(500).json({ 
+      message: "Server error", 
+      error: error instanceof Error ? error.message : String(error) 
+    });
   }
 });
 
