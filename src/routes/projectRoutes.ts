@@ -16,7 +16,7 @@ const validate = (req: express.Request, res: express.Response, next: express.Nex
 
 // ==================== PROJECT ROUTES ====================
 
-// ✅ CREATE Project
+// CREATE Project
 router.post(
   "/",
   [
@@ -56,7 +56,7 @@ router.post(
   }
 );
 
-// ✅ READ all projects
+// READ all projects
 router.get("/", async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
@@ -69,7 +69,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ READ single project by ID
+// READ single project by ID
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,7 +85,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ UPDATE project
+// UPDATE project
 router.put(
   "/:id",
   [
@@ -106,11 +106,19 @@ router.put(
   }
 );
 
-// ✅ DELETE project
+// DELETE project (cascading delete to avoid foreign key errors)
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Delete tasks, documents, payments first
+    await prisma.task.deleteMany({ where: { projectId: Number(id) } });
+    await prisma.document.deleteMany({ where: { projectId: Number(id) } });
+    await prisma.payment.deleteMany({ where: { projectId: Number(id) } });
+
+    // Then delete project
     await prisma.project.delete({ where: { id: Number(id) } });
+
     res.json({ message: `Project ${id} deleted` });
   } catch (error) {
     console.error(error);
@@ -118,9 +126,9 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// ==================== NESTED POST ROUTES ====================
+// ==================== NESTED ROUTES ====================
 
-// ✅ CREATE Task for a project
+// CREATE Task for a project
 router.post(
   "/:id/tasks",
   [
@@ -149,7 +157,31 @@ router.post(
   }
 );
 
-// ✅ CREATE Document for a project
+// UPDATE Task
+router.put("/:projectId/tasks/:taskId", async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const updated = await prisma.task.update({ where: { id: Number(taskId) }, data: req.body });
+    res.json({ message: "Task updated", updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// DELETE Task
+router.delete("/:projectId/tasks/:taskId", async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    await prisma.task.delete({ where: { id: Number(taskId) } });
+    res.json({ message: `Task ${taskId} deleted` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// CREATE Document
 router.post(
   "/:id/documents",
   [
@@ -165,10 +197,7 @@ router.post(
       const project = await prisma.project.findUnique({ where: { id: Number(id) } });
       if (!project) return res.status(404).json({ error: "Project not found" });
 
-      const document = await prisma.document.create({
-        data: { title, text, projectId: Number(id) },
-      });
-
+      const document = await prisma.document.create({ data: { title, text, projectId: Number(id) } });
       res.status(201).json({ message: "Document created", document });
     } catch (error) {
       console.error(error);
@@ -177,7 +206,31 @@ router.post(
   }
 );
 
-// ✅ CREATE Payment for a project
+// UPDATE Document
+router.put("/:projectId/documents/:documentId", async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const updated = await prisma.document.update({ where: { id: Number(documentId) }, data: req.body });
+    res.json({ message: "Document updated", updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// DELETE Document
+router.delete("/:projectId/documents/:documentId", async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    await prisma.document.delete({ where: { id: Number(documentId) } });
+    res.json({ message: `Document ${documentId} deleted` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// CREATE Payment
 router.post(
   "/:id/payments",
   [
@@ -194,10 +247,7 @@ router.post(
       const project = await prisma.project.findUnique({ where: { id: Number(id) } });
       if (!project) return res.status(404).json({ error: "Project not found" });
 
-      const payment = await prisma.payment.create({
-        data: { amount, method, date, projectId: Number(id) },
-      });
-
+      const payment = await prisma.payment.create({ data: { amount, method, date, projectId: Number(id) } });
       res.status(201).json({ message: "Payment created", payment });
     } catch (error) {
       console.error(error);
@@ -206,7 +256,32 @@ router.post(
   }
 );
 
+// UPDATE Payment
+router.put("/:projectId/payments/:paymentId", async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const updated = await prisma.payment.update({ where: { id: Number(paymentId) }, data: req.body });
+    res.json({ message: "Payment updated", updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// DELETE Payment
+router.delete("/:projectId/payments/:paymentId", async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    await prisma.payment.delete({ where: { id: Number(paymentId) } });
+    res.json({ message: `Payment ${paymentId} deleted` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
 export default router;
+
 
 
 
