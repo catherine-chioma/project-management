@@ -14,6 +14,8 @@ const validate = (req: express.Request, res: express.Response, next: express.Nex
   next();
 };
 
+// ==================== PROJECT ROUTES ====================
+
 // ✅ CREATE Project
 router.post(
   "/",
@@ -39,19 +41,11 @@ router.post(
     try {
       const { name, description, budget, startDate, endDate, ownerId } = req.body;
 
-      // Check if owner exists
       const owner = await prisma.user.findUnique({ where: { id: ownerId } });
       if (!owner) return res.status(400).json({ error: "Owner not found" });
 
       const project = await prisma.project.create({
-        data: {
-          name,
-          description,
-          budget: budget ?? undefined,
-          startDate,
-          endDate,
-          ownerId,
-        },
+        data: { name, description, budget: budget ?? undefined, startDate, endDate, ownerId },
       });
 
       res.status(201).json({ message: "Project created", project });
@@ -83,9 +77,7 @@ router.get("/:id", async (req, res) => {
       where: { id: Number(id) },
       include: { owner: true, tasks: true, documents: true, payments: true },
     });
-
     if (!project) return res.status(404).json({ message: "Project not found" });
-
     res.json(project);
   } catch (error) {
     console.error(error);
@@ -105,10 +97,7 @@ router.put(
   async (req: express.Request, res: express.Response) => {
     try {
       const { id } = req.params;
-      const updated = await prisma.project.update({
-        where: { id: Number(id) },
-        data: req.body,
-      });
+      const updated = await prisma.project.update({ where: { id: Number(id) }, data: req.body });
       res.json({ message: "Project updated", updated });
     } catch (error) {
       console.error(error);
@@ -129,7 +118,70 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// ==================== NESTED POST ROUTES ====================
+
+// ✅ CREATE Task for a project
+router.post("/:id/tasks", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, userId, dueDate } = req.body;
+
+    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const task = await prisma.task.create({
+      data: { title, description, userId, projectId: Number(id), dueDate: dueDate ? new Date(dueDate) : undefined },
+    });
+
+    res.status(201).json({ message: "Task created", task });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ CREATE Document for a project
+router.post("/:id/documents", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, text } = req.body;
+
+    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const document = await prisma.document.create({
+      data: { title, text, projectId: Number(id) },
+    });
+
+    res.status(201).json({ message: "Document created", document });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ CREATE Payment for a project
+router.post("/:id/payments", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, method, date } = req.body;
+
+    const project = await prisma.project.findUnique({ where: { id: Number(id) } });
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const payment = await prisma.payment.create({
+      data: { amount, method, date: date ? new Date(date) : undefined, projectId: Number(id) },
+    });
+
+    res.status(201).json({ message: "Payment created", payment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
+
 
 
 
