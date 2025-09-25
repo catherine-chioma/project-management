@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import projectRoutes from "./routes/projectRoutes";
+import authRoutes from "./routes/auth";  // ✅ import auth route
 import prisma from "./db";  // ✅ centralized Prisma
 
 dotenv.config();
@@ -26,8 +27,11 @@ app.get("/health", async (req, res) => {
   }
 });
 
+// ✅ Auth routes
+app.use("/api/auth", authRoutes); // e.g. POST /api/auth/login
+
 // ✅ Project routes
-app.use("/projects", projectRoutes); // Base path for project APIs
+app.use("/api/projects", projectRoutes); // ✅ added /api prefix for clarity
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
