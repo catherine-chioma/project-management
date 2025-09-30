@@ -9,7 +9,14 @@ import authRoutes from "./routes/auth"; // ✅ import auth route
 import prisma from "./db"; // ✅ centralized Prisma
 
 dotenv.config();
+
 const app = express();
+
+// Set default environment if not provided
+const NODE_ENV = process.env.NODE_ENV || "development";
+const PORT = process.env.PORT || 5000;
+
+console.log(`⚡ Running in ${NODE_ENV} mode`);
 
 // ✅ Middleware
 app.use(cors());
@@ -26,6 +33,7 @@ app.get("/health", async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({ status: "ok", db: "connected" });
   } catch (error) {
+    console.error("Database connection error:", error);
     res.status(500).json({ status: "error", db: "not connected" });
   }
 });
@@ -45,5 +53,5 @@ app.use("/api/documents", documentRoutes);
 // ✅ Payment routes
 app.use("/api/payments", paymentRoutes);
 
-const PORT = process.env.PORT || 5000;
+// ✅ Start server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
