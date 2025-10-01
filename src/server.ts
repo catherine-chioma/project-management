@@ -10,6 +10,9 @@ import prisma from "./db"; // ✅ centralized Prisma
 
 dotenv.config();
 
+// 🔹 Log DATABASE_URL to verify Render picks it up
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
 const app = express();
 
 // Set default environment if not provided
