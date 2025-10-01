@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES2020",              // Modern JS features
-    "module": "CommonJS",            // Matches your package.json ("type": "commonjs")
-    "rootDir": "./src",              // Source files
-    "outDir": "./dist",              // Compiled output
-    "esModuleInterop": true,         // Allow default imports from CommonJS
-    "moduleResolution": "node",  // Updated for future TypeScript compatibility
-    "strict": true,                  // Strict type checks
-    "skipLibCheck": true,            // Skip library .d.ts checks
-    "forceConsistentCasingInFileNames": true,
-    "types": ["node", "express"],     // Ensure Node + Express types are included
-    "ignoreDeprecations": "6.0"
+    "target": "ES2020",                        // Modern JS features
+    "module": "Node16",                        // Must match moduleResolution
+    "rootDir": "./src",                        // Source files
+    "outDir": "./dist",                        // Compiled output
+    "esModuleInterop": true,                   // Allow default imports from CommonJS
+    "moduleResolution": "node16",              // Must match module
+    "strict": true,                            // Strict type checks
+    "skipLibCheck": true,                      // Skip library .d.ts checks
+    "forceConsistentCasingInFileNames": true,  // Prevent inconsistent imports
+    "types": ["node", "express"]               // Ensure Node + Express types are included
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
+
+
+
 
 
 
