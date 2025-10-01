@@ -38,6 +38,17 @@ app.get("/health", async (req, res) => {
   }
 });
 
+// ✅ New temporary DB check route
+app.get("/db-check", async (req, res) => {
+  try {
+    const result = await prisma.$queryRaw`SELECT NOW()`;
+    res.json({ status: "ok", time: result });
+  } catch (error: any) {
+    console.error("DB connection failed:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 // ✅ Auth routes
 app.use("/api/auth", authRoutes); // e.g. POST /api/auth/login
 
