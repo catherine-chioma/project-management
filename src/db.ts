@@ -1,39 +1,17 @@
-// ──────────────────────────────────────────────────────────────
-// db.ts
-// ──────────────────────────────────────────────────────────────
+// src/db.ts
 import { PrismaClient } from "@prisma/client";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-// ──────────────────────────────────────────────────────────────
-// Ensure DATABASE_URL is set
-// ──────────────────────────────────────────────────────────────
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set in environment variables.");
-}
-
-// ──────────────────────────────────────────────────────────────
-// Prisma client options
-// ──────────────────────────────────────────────────────────────
+// Initialize Prisma Client
+// Supabase requires SSL, which is handled via the DATABASE_URL query param (sslmode=require)
 const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-  log: [
-    { level: "info", emit: "stdout" },
-    { level: "warn", emit: "stdout" },
-    { level: "error", emit: "stdout" },
-    { level: "query", emit: "stdout" }, // optional: logs every query
-  ],
+  log: ["info", "warn", "error"],
 });
 
 // ──────────────────────────────────────────────────────────────
-// Test connection immediately
+// Function to test database connection
+// Call this from server.ts after server starts
 // ──────────────────────────────────────────────────────────────
-async function testConnection() {
+export async function testConnection() {
   try {
     await prisma.$queryRaw`SELECT 1`;
     console.log("✅ Database connection successful!");
@@ -42,25 +20,20 @@ async function testConnection() {
   }
 }
 
-testConnection();
-
 // ──────────────────────────────────────────────────────────────
 // Graceful shutdown
 // ──────────────────────────────────────────────────────────────
-process.on("SIGINT", async () => {
-  console.log("🛑 SIGINT received. Closing database connection...");
-  await prisma.$disconnect();
-  process.exit(0);
-});
+async function disconnectPrisma() {
+  try {
+    console.log("🛑 Closing database connection...");
+    await prisma.$disconnect();
+  } catch (err) {
+    console.error("Error disconnecting Prisma:", err);
+  }
+}
 
-process.on("SIGTERM", async () => {
-  console.log("🛑 SIGTERM received. Closing database connection...");
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on("SIGINT", disconnectPrisma);
+process.on("SIGTERM", disconnectPrisma);
 
-// ──────────────────────────────────────────────────────────────
 export default prisma;
-
-
 
